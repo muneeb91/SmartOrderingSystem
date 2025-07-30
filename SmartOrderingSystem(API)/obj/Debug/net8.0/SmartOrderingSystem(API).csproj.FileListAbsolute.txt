@@ -3,6 +3,8 @@ C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\b
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\App_Data\orders.json
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\SmartOrderingSystem(API).staticwebassets.runtime.json
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\SmartOrderingSystem(API).staticwebassets.endpoints.json
+C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\App_Data\whatsapp_logs.json
+C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\App_Data\users.json
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\App_Data\menuitems.json
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\SmartOrderingSystem(API).exe
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\SmartOrderingSystem(API).deps.json
@@ -28,6 +30,7 @@ C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\o
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\SmartOrderingSystem(API).MvcApplicationPartsAssemblyInfo.cache
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\SmartOrderingSystem(API).RazorAssemblyInfo.cache
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\SmartOrderingSystem(API).RazorAssemblyInfo.cs
+C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\SmartOrderingSystem(API).sourcelink.json
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -45,5 +48,3 @@ C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\o
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\SmartOrderingSystem(API).pdb
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\SmartOrderingSystem(API).genruntimeconfig.cache
 C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\obj\Debug\net8.0\ref\SmartOrderingSystem(API).dll
-C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\App_Data\users.json
-C:\Users\ibechs\source\repos\SmartOrderingSystem(API)\SmartOrderingSystem(API)\bin\Debug\net8.0\App_Data\whatsapp_logs.json

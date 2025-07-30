@@ -26,6 +26,7 @@
     <None Include="App_Data\orders.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="wwwroot\README.md" />
   </ItemGroup>
 
   <ItemGroup>

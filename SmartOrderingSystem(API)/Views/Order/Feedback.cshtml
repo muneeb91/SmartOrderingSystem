@@ -1,0 +1,68 @@
+﻿@model List<SmartOrderingSystem.Models.Feedback>
+
+<!-- TEXT FEEDBACK FORM -->
+<form asp-action="SubmitFeedback" method="post">
+    @for (int i = 0; i < Model.Count; i++)
+    {
+        <div>
+            <label>@Model[i].ItemName</label><br />
+            <textarea name="[@i].Comment" rows="3" cols="50" placeholder="Write your feedback here..."></textarea>
+            <input type="hidden" name="[@i].ItemName" value="@Model[i].ItemName" />
+        </div>
+        <hr />
+    }
+    <button type="submit">Submit Feedback</button>
+</form>
+
+<hr />
+
+<!-- VOICE FEEDBACK FORM -->
+<form asp-action="SubmitVoiceFeedback" method="post" enctype="multipart/form-data" id="voiceForm">
+    <h3>Record Voice Feedback</h3>
+    <button type="button" id="startBtn"> Start Recording</button>
+    <button type="button" id="stopBtn" disabled> Stop Recording</button>
+    <br><br>
+    <audio id="audioPlayback" controls></audio>
+    <br><br>
+    <input type="file" id="audioFileInput" name="audioFile" style="display:none" />
+    <button type="submit" id="sendBtn" disabled> Send Voice Feedback</button>
+</form>
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+
+    document.getElementById("startBtn").onclick = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            document.getElementById("audioPlayback").src = audioUrl;
+
+            const file = new File([audioBlob], "feedback.wav", { type: "audio/wav" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById("audioFileInput").files = dataTransfer.files;
+
+            document.getElementById("sendBtn").disabled = false;
+        };
+
+        mediaRecorder.start();
+        document.getElementById("startBtn").disabled = true;
+        document.getElementById("stopBtn").disabled = false;
+    };
+
+    document.getElementById("stopBtn").onclick = () => {
+        mediaRecorder.stop();
+        document.getElementById("stopBtn").disabled = true;
+        document.getElementById("startBtn").disabled = false;
+    };
+</script>

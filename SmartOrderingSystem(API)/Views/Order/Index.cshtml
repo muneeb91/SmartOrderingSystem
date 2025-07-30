@@ -1,14 +1,17 @@
 ﻿@model List<SmartOrderingSystem.Models.Order>
 
+@{
+    ViewBag.Title = "Orders";
+}
+
 <h2>Orders</h2>
 
 <table class="table">
     <thead>
         <tr>
             <th>Order ID</th>
-            <th>Customer Name</th>
             <th>Status</th>
-            <th>Total Price</th>
+            <th>Item Count</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -17,15 +20,14 @@
         {
             <tr>
                 <td>@order.Id</td>
-                <td>@order.CustomerName</td>
-                <td>@order.Status.ToString()</td>
-                <td>@order.TotalPrice.ToString("C")</td>
+                <td>@order.Status</td>
+                <td>@order.Items?.Count ?? 0</td>
                 <td>
-                    <a asp-action="Details" asp-route-id="@order.Id">Details</a>
+                    <a class="btn btn-sm btn-info" href="@Url.Action("Details", "Order", new { id = order.Id })">Details</a>
+                    <a class="btn btn-sm btn-warning" href="@Url.Action("UpdateStatus", "Order", new { id = order.Id })">Update Status</a>
+                    <a class="btn btn-sm btn-success" href="@Url.Action("Feedback", "Order", new { orderId = order.Id })">Give Feedback</a>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
-<a asp-action="Create">Create New Order</a>

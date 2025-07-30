@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartOrderingSystem(API)")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2b8db1010a5ebcd9ab6e5928fe5f0337064750ca")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartOrderingSystem(API)")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartOrderingSystem(API)")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

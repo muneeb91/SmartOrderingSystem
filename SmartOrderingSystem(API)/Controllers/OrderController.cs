@@ -1,8 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using SmartOrderingSystem.Models;
 using SmartOrderingSystem.Repositories;
 using SmartOrderingSystem.Services;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace SmartOrderingSystem.Controllers
 {
@@ -11,34 +19,17 @@ namespace SmartOrderingSystem.Controllers
         private readonly OrderService orderService = new OrderService();
         private readonly MenuRepository menuRepo = new MenuRepository();
 
-        /*
-        private (string Username, string Role)? GetUserFromToken()
-        {
-            var authHeader = Request.Headers["Authorization"].ToString();
-            if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
-                return null;
-
-            var token = authHeader.Replace("Bearer ", "");
-            return DemoJwt.Validate(token);
-        }
-        */
+        private const string FeedbackApiUrl = "http://192.168.18.97:5000/feedback";
+        private const string AudioApiUrl = "http://192.168.18.97:5000/process_audio";
 
         public IActionResult Index()
         {
-            // var user = GetUserFromToken();
-            // if (user == null)
-            //     return Unauthorized("Authentication required.");
-
             var orders = orderService.GetAll();
             return View(orders);
         }
 
         public IActionResult Details(int id)
         {
-            // var user = GetUserFromToken();
-            // if (user == null)
-            //     return Unauthorized("Authentication required.");
-
             var order = orderService.GetById(id);
             if (order == null) return NotFound();
             return View(order);
@@ -46,10 +37,6 @@ namespace SmartOrderingSystem.Controllers
 
         public IActionResult Create()
         {
-            // var user = GetUserFromToken();
-            // if (user == null)
-            //     return Unauthorized("Authentication required.");
-
             ViewBag.MenuItems = menuRepo.GetAll();
             return View(new Order());
         }
@@ -57,10 +44,6 @@ namespace SmartOrderingSystem.Controllers
         [HttpPost]
         public IActionResult Create(Order order)
         {
-            // var user = GetUserFromToken();
-            // if (user == null)
-            //     return Unauthorized("Authentication required.");
-
             if (order == null || order.Items == null || order.Items.Count == 0)
             {
                 ModelState.AddModelError("", "Order must have at least one item.");
@@ -74,10 +57,6 @@ namespace SmartOrderingSystem.Controllers
 
         public IActionResult UpdateStatus(int id)
         {
-            // var user = GetUserFromToken();
-            // if (user == null || user.Value.Role != "Admin")
-            //     return Unauthorized("Only Admin can update order status.");
-
             var order = orderService.GetById(id);
             if (order == null) return NotFound();
 
@@ -95,12 +74,73 @@ namespace SmartOrderingSystem.Controllers
         [HttpPost]
         public IActionResult UpdateStatus(int id, OrderStatus status)
         {
-            // var user = GetUserFromToken();
-            // if (user == null || user.Value.Role != "Admin")
-            //     return Unauthorized("Only Admin can update order status.");
-
             orderService.UpdateStatus(id, status);
             return RedirectToAction(nameof(Index));
+        }
+
+        // -------------- GET Feedback form --------------
+        public IActionResult Feedback(int orderId)
+        {
+            var order = orderService.GetById(orderId);
+            if (order == null) return NotFound();
+
+            var model = order.Items.Select(i => new Feedback
+            {
+                ItemName = i.MenuItemName
+            }).ToList();
+
+            return View(model);
+        }
+
+        // ------------- Submit Text Feedback -------------
+        [HttpPost]
+        public async Task<IActionResult> SubmitFeedback(List<Feedback> feedbackList)
+        {
+            using var httpClient = new HttpClient();
+
+            var fullFeedbackText = string.Join(". ", feedbackList.Select(f => f.Comment).Where(c => !string.IsNullOrWhiteSpace(c)));
+
+            var payload = new { text = fullFeedbackText };
+            var json = JsonSerializer.Serialize(payload);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(FeedbackApiUrl, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                // Optionally log or show error
+                Console.WriteLine($"❌ Feedback failed: {error}");
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        // ------------- Submit Voice Feedback -------------
+        [HttpPost]
+        public async Task<IActionResult> SubmitVoiceFeedback(IFormFile audioFile)
+        {
+            if (audioFile == null || audioFile.Length == 0)
+                return BadRequest("No audio file provided.");
+
+            using var httpClient = new HttpClient();
+            using var content = new MultipartFormDataContent();
+
+            var stream = audioFile.OpenReadStream();
+            var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(audioFile.ContentType);
+
+            content.Add(fileContent, "file", audioFile.FileName);
+
+            var response = await httpClient.PostAsync(AudioApiUrl, content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Voice feedback failed: {error}");
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }
