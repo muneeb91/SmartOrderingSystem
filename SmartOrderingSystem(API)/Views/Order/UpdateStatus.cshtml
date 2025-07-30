@@ -1,0 +1,21 @@
+﻿@model SmartOrderingSystem.Models.Order
+
+<h2>Update Order Status</h2>
+
+<form asp-action="UpdateStatus" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <label>Status</label>
+    <select name="status">
+        @foreach (var status in Enum.GetValues(typeof(SmartOrderingSystem.Models.OrderStatus)))
+        {
+            <option value="@((int)status)" selected="@(status.ToString() == Model.Status.ToString() ? "selected" : "")">
+                @status
+            </option>
+        }
+    </select>
+
+    <button type="submit">Update</button>
+</form>
+
+<a href="@Url.Action("Index", "Order")">Cancel</a>

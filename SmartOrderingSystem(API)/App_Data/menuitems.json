@@ -1,0 +1,12 @@
+[
+  {
+    "Id": 0,
+    "Name": null,
+    "Price": 0
+  },
+  {
+    "Id": 1,
+    "Name": "Burger",
+    "Price": 100
+  }
+]

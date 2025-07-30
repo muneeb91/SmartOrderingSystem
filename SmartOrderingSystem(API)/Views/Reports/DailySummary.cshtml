@@ -1,0 +1,32 @@
+﻿@model SmartOrderingSystem.Models.DailySummaryReportModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Daily Summary Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            border-bottom: 2px solid #333;
+        }
+        .summary {
+            margin-top: 20px;
+        }
+        .summary p {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Daily Summary Report</h1>
+
+    <div class="summary">
+        <p><strong>Total Orders:</strong> @Model.TotalOrders</p>
+        <p><strong>Total Revenue:</strong> @Model.TotalRevenue.ToString("C")</p>
+    </div>
+</body>
+</html>

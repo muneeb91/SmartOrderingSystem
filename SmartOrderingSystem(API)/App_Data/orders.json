@@ -1,0 +1,86 @@
+[
+  {
+    "Id": 1,
+    "CustomerName": "muneeb",
+    "CustomerPhone": "03015058573",
+    "Items": [
+      {
+        "MenuItemId": 0,
+        "MenuItemName": "Burger",
+        "Quantity": 1,
+        "Price": 0
+      },
+      {
+        "MenuItemId": 0,
+        "MenuItemName": "Fries",
+        "Quantity": 1,
+        "Price": 0
+      }
+    ],
+    "TotalPrice": 0,
+    "Status": 0
+  },
+  {
+    "Id": 2,
+    "CustomerName": "muneeb",
+    "CustomerPhone": "03015058573",
+    "Items": [
+      {
+        "MenuItemId": 0,
+        "MenuItemName": "Burger",
+        "Quantity": 1,
+        "Price": 0
+      },
+      {
+        "MenuItemId": 0,
+        "MenuItemName": "Fries",
+        "Quantity": 1,
+        "Price": 0
+      }
+    ],
+    "TotalPrice": 0,
+    "Status": 0
+  },
+  {
+    "Id": 3,
+    "CustomerName": "Bilal",
+    "CustomerPhone": "03015058573",
+    "Items": [
+      {
+        "MenuItemId": 0,
+        "MenuItemName": null,
+        "Quantity": 1,
+        "Price": 0
+      }
+    ],
+    "TotalPrice": 0,
+    "Status": 0
+  },
+  {
+    "Id": 4,
+    "CustomerName": "Ali",
+    "CustomerPhone": "03015058573",
+    "Items": [
+      {
+        "MenuItemId": 1,
+        "MenuItemName": "Burger",
+        "Quantity": 1,
+        "Price": 300.00
+      },
+      {
+        "MenuItemId": 2,
+        "MenuItemName": "Fries",
+        "Quantity": 1,
+        "Price": 150.00
+      },
+      {
+        "MenuItemId": 3,
+        "MenuItemName": "Pizza",
+        "Quantity": 1,
+        "Price": 1250.00
+      }
+    ],
+    "TotalPrice": 1700.00,
+    "Status": 0
+  }
+]
