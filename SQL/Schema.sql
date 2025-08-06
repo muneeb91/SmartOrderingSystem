@@ -1,0 +1,52 @@
+﻿
+ CREATE TABLE MenuItems (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Name NVARCHAR(100) NOT NULL,
+    Price DECIMAL(18,2) NOT NULL
+);
+
+CREATE TABLE Orders (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    CustomerName NVARCHAR(100) NOT NULL,
+    CustomerPhone NVARCHAR(20) NOT NULL,
+    TotalPrice DECIMAL(18,2) NOT NULL,
+    Status NVARCHAR(50) NOT NULL
+);
+
+CREATE TABLE OrderItems (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    OrderId INT NOT NULL,
+    MenuItemId INT NOT NULL,
+    Name NVARCHAR(100) NOT NULL,
+    Quantity INT NOT NULL,
+    Price DECIMAL(18,2) NOT NULL,
+    FOREIGN KEY (OrderId) REFERENCES Orders(Id),
+    FOREIGN KEY (MenuItemId) REFERENCES MenuItems(Id)
+);
+
+CREATE TABLE WhatsAppLogs (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    OrderId INT NOT NULL,
+    Message NVARCHAR(MAX) NOT NULL,
+    Status NVARCHAR(50) NOT NULL,
+    Timestamp DATETIME NOT NULL,
+    FOREIGN KEY (OrderId) REFERENCES Orders(Id)
+);
+
+CREATE TABLE Feedbacks (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    OrderId INT NOT NULL,
+    Rating INT NOT NULL,
+    Comment NVARCHAR(MAX),
+    Sentiment NVARCHAR(50),
+    Keywords NVARCHAR(MAX),
+    FOREIGN KEY (OrderId) REFERENCES Orders(Id)
+);
+
+CREATE TABLE Users (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    Username NVARCHAR(50) NOT NULL UNIQUE,
+    Password NVARCHAR(100) NOT NULL,
+    Role NVARCHAR(50) NOT NULL
+);
+

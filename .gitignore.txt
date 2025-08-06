@@ -1,0 +1,10 @@
+     # IDE
+     .vscode/
+     .idea/
+     *.suo
+     *.user
+
+     # Temporary files
+     *.log
+     *.tmp
+     ```

@@ -1,0 +1,1158 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Smart Ordering System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        .nav {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .nav button {
+                background-color: #dc3545;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                cursor: pointer;
+                border-radius: 3px;
+            }
+
+                .nav button:hover {
+                    background-color: #c82333;
+                }
+
+        .form, .module {
+            margin-bottom: 20px;
+        }
+
+            .form label {
+                display: block;
+                margin-bottom: 5px;
+            }
+
+            .form input, .form select {
+                width: 100%;
+                padding: 8px;
+                margin-bottom: 10px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+
+            .form button, .module button {
+                background-color: #007bff;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                cursor: pointer;
+                border-radius: 3px;
+            }
+
+                .form button:hover, .module button:hover {
+                    background-color: #0056b3;
+                }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .module {
+            display: none;
+        }
+
+            .module.active {
+                display: block;
+            }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-bottom: 5px;
+            border-radius: 3px;
+        }
+
+        #voice-transcript {
+            margin-top: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .quantity-input {
+            width: 60px;
+            margin-left: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <h1>Smart Ordering System</h1>
+            <div id="user-info"></div>
+            <button id="logout" style="display: none;">Logout</button>
+        </div>
+        <div id="error" class="error"></div>
+
+        <div id="auth" class="form">
+            <h2 id="auth-title">Login</h2>
+            <form id="auth-form">
+                <label for="username">Username</label>
+                <input type="text" id="username" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+                <label for="role" id="role-label" style="display: none;">Role</label>
+                <select id="role" style="display: none;">
+                    <option value="Customer">Customer</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Kitchen">Kitchen</option>
+                </select>
+                <button type="submit">Login</button>
+            </form>
+            <button id="toggle-auth">Need an account? Register</button>
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <div class="module-nav">
+                <button onclick="showModule('menu')">Menu</button>
+                <button onclick="showModule('order')">Order</button>
+                <button onclick="showModule('feedback')">Feedback</button>
+                <button onclick="showModule('report')" id="report-btn" style="display: none;">Report</button>
+                <button onclick="showModule('ai')">AI Features</button>
+            </div>
+
+            <div id="menu" class="module">
+                <h2>Menu Management</h2>
+                <div id="admin-menu-form" style="display: none;">
+                    <label for="menu-name">Item Name</label>
+                    <input type="text" id="menu-name">
+                    <label for="menu-price">Price</label>
+                    <input type="number" id="menu-price" step="0.01">
+                    <button onclick="addMenuItem()">Add Item</button>
+                </div>
+                <ul id="menu-list"></ul>
+            </div>
+
+            <div id="order" class="module">
+                <h2>Order Management</h2>
+                <div id="customer-order-form" style="display: none;">
+                    <h3>Customer Order</h3>
+                    <label for="order-customer-name">Customer Name</label>
+                    <input type="text" id="order-customer-name">
+                    <label for="order-customer-phone">Customer Phone</label>
+                    <input type="text" id="order-customer-phone">
+                    <label for="order-items">Menu Items</label>
+                    <select id="order-items" multiple></select>
+                    <div id="quantity-controls"></div>
+                    <button onclick="placeOrder()">Place Order</button>
+                </div>
+                <div id="call-order-form" style="display: none;">
+                    <h3>Order via Call (Admin/Kitchen)</h3>
+                    <label for="call-customer-name">Customer Name</label>
+                    <input type="text" id="call-customer-name">
+                    <label for="call-customer-phone">Customer Phone</label>
+                    <input type="text" id="call-customer-phone">
+                    <label for="call-order-items">Menu Items</label>
+                    <select id="call-order-items" multiple></select>
+                    <div id="call-quantity-controls"></div>
+                    <button onclick="placeCallOrder()">Place Call Order</button>
+                </div>
+                <ul id="order-list"></ul>
+            </div>
+
+            <div id="feedback" class="module">
+                <h2>Feedback Management</h2>
+                <div id="customer-feedback-form" style="display: none;">
+                    <label for="feedback-order-id">Order ID</label>
+                    <input type="number" id="feedback-order-id" value="1">
+                    <label for="feedback-rating">Rating (1-5)</label>
+                    <input type="number" id="feedback-rating" value="4" min="1" max="5">
+                    <label for="feedback-comment">Comment</label>
+                    <input type="text" id="feedback-comment">
+                    <button onclick="submitFeedback()">Submit Feedback</button>
+                </div>
+                <ul id="feedback-list"></ul>
+            </div>
+
+            <div id="report" class="module">
+                <h2>Report Generation</h2>
+                <button onclick="fetchReport()">View Report</button>
+                <button onclick="downloadReport('daily-summary')">Download Daily Summary</button>
+                <div>
+                    <label for="invoice-order-id">Order ID for Invoice</label>
+                    <input type="number" id="invoice-order-id" value="1">
+                    <button onclick="downloadReport('order-invoice/' + document.getElementById('invoice-order-id').value)">Download Order Invoice</button>
+                </div>
+                <pre id="report-result"></pre>
+            </div>
+
+            <div id="ai" class="module">
+                <h2>AI Features</h2>
+                <div>
+                    <h3>Voice Order Parsing</h3>
+                    <button onclick="startVoiceRecording()">Record Voice</button>
+                    <button onclick="retryVoiceRecording()">Retry Recording</button>
+                    <label for="voice-input">Manual Order Input (if voice fails)</label>
+                    <input type="text" id="voice-input" placeholder="e.g., two zinger burgers and one fries">
+                    <div id="voice-transcript"></div>
+                    <div id="voice-confidence"></div>
+                    <button onclick="parseVoiceOrder()">Parse and Place Order</button>
+                    <div id="voice-result"></div>
+                </div>
+                <div>
+                    <h3>Feedback Analysis</h3>
+                    <input type="text" id="feedback-input" placeholder="e.g., Burger was cold, but fries were great">
+                    <button onclick="analyzeFeedback()">Analyze Feedback</button>
+                    <div id="feedback-result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('token') || '';
+        let role = localStorage.getItem('role') || '';
+        let username = localStorage.getItem('username') || '';
+        const apiBaseUrl = 'http://localhost:5010/api';
+        const aiVoiceUrl = 'http://localhost:5000/parse-order';
+        const aiFeedbackUrl = 'http://localhost:5001/analyze-feedback';
+        let voiceTranscript = '';
+        let menuItems = [];
+
+        function setError(message) {
+            document.getElementById('error').innerText = message;
+        }
+
+        function parseErrorResponse(error, errorText) {
+            try {
+                const errorObj = JSON.parse(errorText || '{}');
+                if (errorObj.errors) {
+                    return `Error: ${Object.keys(errorObj.errors).map(key => `${key}: ${errorObj.errors[key].join(', ')}`).join('; ')}`;
+                }
+                return errorObj.error || errorObj.message || error.message || 'Unknown error';
+            } catch {
+                return errorText || error.message || 'Unknown error';
+            }
+        }
+
+        function showModule(moduleId) {
+            document.querySelectorAll('.module').forEach(module => {
+                module.classList.remove('active');
+            });
+            document.getElementById(moduleId).classList.add('active');
+            setError('');
+            if (moduleId === 'menu') fetchMenu();
+            if (moduleId === 'order') {
+                fetchOrders();
+                fetchMenuItemsForOrder();
+            }
+            if (moduleId === 'feedback') fetchFeedback();
+            if (moduleId === 'report') fetchReport();
+        }
+
+        function updateUI() {
+            const authDiv = document.getElementById('auth');
+            const dashboardDiv = document.getElementById('dashboard');
+            const userInfo = document.getElementById('user-info');
+            const logoutBtn = document.getElementById('logout');
+            const reportBtn = document.getElementById('report-btn');
+            const adminMenuForm = document.getElementById('admin-menu-form');
+            const customerOrderForm = document.getElementById('customer-order-form');
+            const callOrderForm = document.getElementById('call-order-form');
+            const customerFeedbackForm = document.getElementById('customer-feedback-form');
+
+            if (token) {
+                authDiv.style.display = 'none';
+                dashboardDiv.style.display = 'block';
+                userInfo.innerText = `Welcome, ${username} (${role})`;
+                logoutBtn.style.display = 'block';
+                reportBtn.style.display = role === 'Admin' ? 'block' : 'none';
+                adminMenuForm.style.display = role === 'Admin' ? 'block' : 'none';
+                customerOrderForm.style.display = role === 'Customer' ? 'block' : 'none';
+                callOrderForm.style.display = (role === 'Admin' || role === 'Kitchen') ? 'block' : 'none';
+                customerFeedbackForm.style.display = role === 'Customer' ? 'block' : 'none';
+                showModule('menu');
+            } else {
+                authDiv.style.display = 'block';
+                dashboardDiv.style.display = 'none';
+                userInfo.innerText = '';
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const isLogin = document.getElementById('auth-title').innerText === 'Login';
+            const usernameInput = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const roleInput = document.getElementById('role').value;
+            const url = isLogin ? `${apiBaseUrl}/Auth/login` : `${apiBaseUrl}/Auth/register`;
+            const body = isLogin ? { username: usernameInput, password } : { username: usernameInput, password, role: roleInput };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                console.log(`Auth API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log(`Auth API Raw Response: ${errorText || 'Empty response'}`);
+                    throw new Error(`Auth failed: ${response.status} - ${errorText || 'No error details'}`);
+                }
+                const data = await response.json();
+                console.log('Auth Response:', JSON.stringify(data, null, 2));
+                if (isLogin) {
+                    if (data.token) {
+                        token = data.token;
+                        const payload = JSON.parse(atob(data.token.split('.')[1]));
+                        console.log('JWT Payload:', JSON.stringify(payload, null, 2));
+                        role = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || '';
+                        if (!role) {
+                            throw new Error('Role not found in token payload');
+                        }
+                        username = usernameInput;
+                        localStorage.setItem('token', token);
+                        localStorage.setItem('role', role);
+                        localStorage.setItem('username', username);
+                        setError('Login successful.');
+                        updateUI();
+                    } else {
+                        throw new Error('Login failed: No token received.');
+                    }
+                } else {
+                    setError('Registration successful. Please login.');
+                    document.getElementById('auth-title').innerText = 'Login';
+                    document.getElementById('role-label').style.display = 'none';
+                    document.getElementById('role').style.display = 'none';
+                    document.getElementById('toggle-auth').innerText = 'Need an account? Register';
+                }
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Auth Error:', err.message);
+            }
+        });
+
+        document.getElementById('toggle-auth').addEventListener('click', () => {
+            const isLogin = document.getElementById('auth-title').innerText === 'Login';
+            document.getElementById('auth-title').innerText = isLogin ? 'Register' : 'Login';
+            document.getElementById('role-label').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('role').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('toggle-auth').innerText = isLogin ? 'Already have an account? Login' : 'Need an account? Register';
+            setError('');
+        });
+
+        document.getElementById('logout').addEventListener('click', () => {
+            token = '';
+            role = '';
+            username = '';
+            voiceTranscript = '';
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('username');
+            updateUI();
+        });
+
+        async function fetchMenu() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/Menu`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log(`Menu API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Menu API Raw Response: ${responseText || 'Empty response'}`);
+                let data = [];
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Menu Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse menu response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Fetch menu failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Fetch menu failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                menuItems = data;
+                const menuList = document.getElementById('menu-list');
+                menuList.innerHTML = data.length ? data.map(item => `<li>${item.name} - $${item.price}</li>`).join('') : '<li>No menu items available.</li>';
+                setError('');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Menu Fetch Error:', err.message);
+            }
+        }
+
+        async function addMenuItem() {
+            const name = document.getElementById('menu-name').value.trim();
+            const price = document.getElementById('menu-price').value;
+            if (!name || !price) {
+                setError('Please enter item name and price.');
+                return;
+            }
+            try {
+                const response = await fetch(`${apiBaseUrl}/Menu`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, price: parseFloat(price) })
+                });
+                console.log(`Add Menu API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Add Menu API Raw Response: ${responseText || 'Empty response'}`);
+                let data = {};
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Add Menu Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse add menu response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Add item failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Add item failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                document.getElementById('menu-name').value = '';
+                document.getElementById('menu-price').value = '';
+                fetchMenu();
+                setError('Menu item added successfully.');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Add Menu Error:', err.message);
+            }
+        }
+
+        async function fetchMenuItemsForOrder() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/Menu`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log(`Menu Fetch Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Menu Fetch API Raw Response: ${responseText || 'Empty response'}`);
+                let data = [];
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Menu Fetch Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse menu fetch response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Fetch menu failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Fetch menu failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                menuItems = data;
+                const orderSelect = document.getElementById('order-items');
+                const callOrderSelect = document.getElementById('call-order-items');
+                orderSelect.innerHTML = callOrderSelect.innerHTML = data.length ? data.map(item => `<option value="${item.id}">${item.name} - $${item.price}</option>`).join('') : '<option>No items available</option>';
+                const quantityControls = document.getElementById('quantity-controls');
+                const callQuantityControls = document.getElementById('call-quantity-controls');
+                quantityControls.innerHTML = callQuantityControls.innerHTML = data.length ? data.map(item => `
+                            <div>
+                                <label for="quantity-${item.id}">${item.name} Quantity:</label>
+                                <input type="number" id="quantity-${item.id}" class="quantity-input" value="1" min="1">
+                            </div>
+                        `).join('') : '';
+                if (!data.length) {
+                    setError('No menu items available. Please add items in Menu Management.');
+                } else {
+                    setError('');
+                }
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Menu Fetch Error:', err.message);
+            }
+        }
+
+        async function fetchOrders() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/Order`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log(`Orders API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Orders API Raw Response: ${responseText || 'Empty response'}`);
+                let data = [];
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Orders Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse orders response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Fetch orders failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Fetch orders failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                const orderList = document.getElementById('order-list');
+                orderList.innerHTML = data.length ? data.map(order => `
+                            <li>
+                                Order #${order.id} - ${order.customerName} - Status: ${order.status}
+                                ${(role === 'Admin' || role === 'Kitchen') ? `<button onclick="updateOrderStatus(${order.id}, 'In Kitchen')">Set In Kitchen</button>` : ''}
+                            </li>
+                        `).join('') : '<li>No orders available.</li>';
+                setError('');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Orders Fetch Error:', err.message);
+            }
+        }
+
+        async function placeOrder() {
+            const customerName = document.getElementById('order-customer-name').value.trim();
+            const customerPhone = document.getElementById('order-customer-phone').value.trim();
+            const selectedItems = Array.from(document.getElementById('order-items').selectedOptions)
+                .map(option => {
+                    const item = menuItems.find(i => i.id === parseInt(option.value));
+                    return {
+                        menuItemId: parseInt(option.value),
+                        name: item.name,
+                        quantity: parseInt(document.getElementById(`quantity-${option.value}`).value) || 1,
+                        price: parseFloat(option.text.split(' - $')[1])
+                    };
+                });
+
+            console.log('Place Order Inputs:', { customerName, customerPhone, selectedItems });
+            if (!customerName || !customerPhone || !selectedItems.length) {
+                setError('Please enter customer name, phone, and select at least one item.');
+                return;
+            }
+
+            const order = {
+                order: {
+                    customerName,
+                    customerPhone,
+                    totalPrice: selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    status: 'Placed',
+                    orderDate: new Date().toISOString(),
+                    items: selectedItems
+                }
+            };
+            console.log('Place Order Payload:', JSON.stringify(order, null, 2));
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/Order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(order)
+                });
+                console.log(`Place Order Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Place Order API Raw Response: ${responseText || 'Empty response'}`);
+                let data = {};
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Place Order Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse place order response:', jsonError.message, 'Raw Response:', responseText);
+                        setError(`Order may have been placed (status: ${response.status}). Check order list. Raw response: ${responseText || 'Empty'}`);
+                        fetchOrders();
+                        return;
+                    }
+                } else {
+                    console.error('Place Order: Empty response body received');
+                    setError(`Order may have been placed (status: ${response.status}). Check order list. Raw response: Empty`);
+                    fetchOrders();
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error(`Place order failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                document.getElementById('order-customer-name').value = '';
+                document.getElementById('order-customer-phone').value = '';
+                document.getElementById('order-items').selectedIndex = -1;
+                document.querySelectorAll('.quantity-input').forEach(input => input.value = '1');
+                fetchOrders();
+                setError('Order placed successfully.');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Place Order Error:', err.message);
+            }
+        }
+
+        async function placeCallOrder() {
+            const customerName = document.getElementById('call-customer-name').value.trim();
+            const customerPhone = document.getElementById('call-customer-phone').value.trim();
+            const selectedItems = Array.from(document.getElementById('call-order-items').selectedOptions)
+                .map(option => {
+                    const item = menuItems.find(i => i.id === parseInt(option.value));
+                    return {
+                        menuItemId: parseInt(option.value),
+                        name: item.name,
+                        quantity: parseInt(document.getElementById(`quantity-${option.value}`).value) || 1,
+                        price: parseFloat(option.text.split(' - $')[1])
+                    };
+                });
+
+            console.log('Place Call Order Inputs:', { customerName, customerPhone, selectedItems });
+            if (!customerName || !customerPhone || !selectedItems.length) {
+                setError('Please enter customer name, phone, and select at least one item.');
+                return;
+            }
+
+            const order = {
+                order: {
+                    customerName,
+                    customerPhone,
+                    totalPrice: selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    status: 'Placed',
+                    orderDate: new Date().toISOString(),
+                    items: selectedItems
+                }
+            };
+            console.log('Place Call Order Payload:', JSON.stringify(order, null, 2));
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/Order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(order)
+                });
+                console.log(`Place Call Order Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Place Call Order API Raw Response: ${responseText || 'Empty response'}`);
+                let data = {};
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Place Call Order Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse place call order response:', jsonError.message, 'Raw Response:', responseText);
+                        setError(`Order may have been placed (status: ${response.status}). Check order list. Raw response: ${responseText || 'Empty'}`);
+                        fetchOrders();
+                        return;
+                    }
+                } else {
+                    console.error('Place Call Order: Empty response body received');
+                    setError(`Order may have been placed (status: ${response.status}). Check order list. Raw response: Empty`);
+                    fetchOrders();
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error(`Place call order failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                document.getElementById('call-customer-name').value = '';
+                document.getElementById('call-customer-phone').value = '';
+                document.getElementById('call-order-items').selectedIndex = -1;
+                document.querySelectorAll('.quantity-input').forEach(input => input.value = '1');
+                fetchOrders();
+                setError('Call order placed successfully.');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Place Call Order Error:', err.message);
+            }
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                const response = await fetch(`${apiBaseUrl}/Order/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(status)
+                });
+                console.log(`Update Status API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Update Status API Raw Response: ${responseText || 'Empty response'}`);
+                let data = {};
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Update Status Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse update status response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Update status failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Update status failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                fetchOrders();
+                setError('Status updated successfully.');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Update Status Error:', err.message);
+            }
+        }
+
+        async function fetchFeedback() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/Feedback`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log(`Feedback API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Feedback API Raw Response: ${responseText || 'Empty response'}`);
+                let data = [];
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Feedback Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse feedback response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Fetch feedback failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Fetch feedback failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                const feedbackList = document.getElementById('feedback-list');
+                feedbackList.innerHTML = data.length ? data.map(fb => `<li>Order #${fb.orderId} - Rating: ${fb.rating} - ${fb.comment} (${fb.sentiment})</li>`).join('') : '<li>No feedback available.</li>';
+                setError('');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Feedback Fetch Error:', err.message);
+            }
+        }
+
+        async function submitFeedback() {
+            const orderId = document.getElementById('feedback-order-id').value;
+            const rating = document.getElementById('feedback-rating').value;
+            const comment = document.getElementById('feedback-comment').value;
+            if (!orderId || !rating || !comment) {
+                setError('Please fill all feedback fields.');
+                return;
+            }
+            try {
+                const aiResponse = await fetch(aiFeedbackUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment })
+                });
+                console.log(`Feedback AI API Response Status: ${aiResponse.status}, Headers: ${JSON.stringify([...aiResponse.headers])}`);
+                if (!aiResponse.ok) {
+                    const responseText = await aiResponse.text();
+                    console.log(`Feedback AI API Raw Response: ${responseText || 'Empty response'}`);
+                    throw new Error(`Analyze feedback failed: ${aiResponse.status} - ${responseText}`);
+                }
+                const aiData = await aiResponse.json();
+                console.log('Feedback AI Response:', JSON.stringify(aiData, null, 2));
+                const feedback = {
+                    orderId: parseInt(orderId),
+                    rating: parseInt(rating),
+                    comment,
+                    sentiment: aiData.sentiment,
+                    keywords: aiData.keywords
+                };
+                const response = await fetch(`${apiBaseUrl}/Feedback`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(feedback)
+                });
+                console.log(`Feedback API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Feedback API Raw Response: ${responseText || 'Empty response'}`);
+                let data = {};
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Feedback Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse feedback response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Submit feedback failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Submit feedback failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                document.getElementById('feedback-comment').value = '';
+                document.getElementById('feedback-order-id').value = '1';
+                document.getElementById('feedback-rating').value = '4';
+                fetchFeedback();
+                setError('Feedback submitted successfully.');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Submit Feedback Error:', err.message);
+            }
+        }
+
+        async function fetchReport() {
+            try {
+                const response = await fetch(`${apiBaseUrl}/Report`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                console.log(`Report API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed for report: Please log in as Admin.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                const responseText = await response.text();
+                console.log(`Report API Raw Response: ${responseText || 'Empty response'}`);
+                let data = {};
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                        console.log('Report Response:', JSON.stringify(data, null, 2));
+                    } catch (jsonError) {
+                        console.error('Failed to parse report response:', jsonError.message, 'Raw Response:', responseText);
+                        throw new Error(`Fetch report failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                    }
+                }
+                if (!response.ok) {
+                    throw new Error(`Fetch report failed: ${response.status} - ${data.error || responseText || 'No error details'}`);
+                }
+                document.getElementById('report-result').innerHTML = JSON.stringify(data, null, 2);
+                setError('');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Fetch Report Error:', err.message);
+            }
+        }
+
+        async function downloadReport(type) {
+            try {
+                const response = await fetch(`${apiBaseUrl}/Report/${type}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                console.log(`Download Report API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (response.status === 401) {
+                    setError('Authentication failed: Please log in again.');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('username');
+                    updateUI();
+                    return;
+                }
+                if (!response.ok) {
+                    const responseText = await response.text();
+                    console.log(`Download Report API Raw Response: ${responseText || 'Empty response'}`);
+                    let errorData = {};
+                    if (responseText) {
+                        try {
+                            errorData = JSON.parse(responseText);
+                            console.log('Download Report Response:', JSON.stringify(errorData, null, 2));
+                        } catch (jsonError) {
+                            console.error('Failed to parse download report response:', jsonError.message, 'Raw Response:', responseText);
+                            throw new Error(`Download report failed: Invalid JSON response - ${responseText || 'Empty'}`);
+                        }
+                    }
+                    throw new Error(`Download report failed: ${response.status} - ${errorData.error || responseText || 'No error details'}`);
+                }
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = type === 'daily-summary' ? 'DailySummary.pdf' : `OrderInvoice_${type.split('/')[1]}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                setError('Report downloaded successfully.');
+            } catch (err) {
+                setError(`Error: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Download Report Error:', err.message);
+            }
+        }
+
+        async function parseVoiceOrder() {
+            const text = voiceTranscript || document.getElementById('voice-input').value.trim();
+            if (!text) {
+                setError('Please record a voice order or enter text manually.');
+                return;
+            }
+            try {
+                await fetchMenuItemsForOrder();
+                if (!menuItems.length) {
+                    throw new Error('No menu items available to validate voice order.');
+                }
+                console.log('Menu Items:', JSON.stringify(menuItems, null, 2));
+
+                let data;
+                try {
+                    const response = await fetch(aiVoiceUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text })
+                    });
+                    console.log(`Voice API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                    data = await response.json();
+                    console.log('AI Response:', JSON.stringify(data, null, 2));
+                    if (!response.ok) {
+                        const errorMsg = data.error || data.message || JSON.stringify(data) || 'No error details from voice API';
+                        throw new Error(`Parse voice order failed: ${response.status} - ${errorMsg}`);
+                    }
+                } catch (fetchError) {
+                    throw new Error(`Voice API request failed: ${fetchError.message}`);
+                }
+
+                if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
+                    throw new Error(`Invalid voice response format: Expected non-empty items array, got ${JSON.stringify(data)}`);
+                }
+
+                const validItems = data.items.map(item => {
+                    const menuItem = menuItems.find(m =>
+                        (item.menuItemId && m.id === item.menuItemId) ||
+                        (item.name && m.name.toLowerCase() === item.name.toLowerCase())
+                    );
+                    if (!menuItem) {
+                        throw new Error(`Invalid menu item: ${item.name || 'Unknown'} (ID: ${item.menuItemId || 'N/A'}) not found in menu. Available items: ${JSON.stringify(menuItems.map(m => ({ id: m.id, name: m.name })))}`);
+                    }
+                    return {
+                        menuItemId: menuItem.id,
+                        name: menuItem.name,
+                        quantity: parseInt(item.quantity) || 1,
+                        price: menuItem.price
+                    };
+                });
+
+                if (!validItems.length) {
+                    throw new Error('No valid items found in voice order.');
+                }
+
+                document.getElementById('voice-result').innerHTML = validItems.map(item => `${item.quantity} x ${item.name} ($${item.price.toFixed(2)})`).join('<br>');
+
+                if (role === 'Customer') {
+                    let customerName = prompt('Enter customer name:')?.trim();
+                    let customerPhone = prompt('Enter customer phone:')?.trim();
+                    if (!customerName || !customerPhone) {
+                        customerName = customerName || 'Unknown Customer';
+                        customerPhone = customerPhone || '0000000000';
+                        console.warn('Customer name or phone was cancelled; using defaults:', { customerName, customerPhone });
+                    }
+                    const order = {
+                        order: {
+                            customerName,
+                            customerPhone,
+                            totalPrice: validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                            status: 'Placed',
+                            orderDate: new Date().toISOString(),
+                            items: validItems
+                        }
+                    };
+                    console.log('Order Payload:', JSON.stringify(order, null, 2));
+
+                    const orderResponse = await fetch(`${apiBaseUrl}/Order`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(order)
+                    });
+                    console.log(`Order API Response Status: ${orderResponse.status}, Headers: ${JSON.stringify([...orderResponse.headers])}`);
+                    const orderData = await orderResponse.json();
+                    console.log('Order Response:', JSON.stringify(orderData, null, 2));
+                    if (orderResponse.status === 401) {
+                        setError('Authentication failed: Please log in again.');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('role');
+                        localStorage.removeItem('username');
+                        updateUI();
+                        return;
+                    }
+                    if (!orderResponse.ok) {
+                        const errorMsg = orderData.error || orderData.message || JSON.stringify(orderData) || 'No error details from order API';
+                        throw new Error(`Place order failed: ${orderResponse.status} - ${errorMsg}`);
+                    }
+                    setError(`Voice order placed successfully. Order ID: ${orderData.orderId}`);
+                    fetchOrders();
+                } else {
+                    setError('Order parsed. Login as Customer to place order.');
+                }
+            } catch (err) {
+                const errorMsg = err.message.includes(' - ') ? err.message.split(' - ')[1] : err.message;
+                setError(`Error: ${errorMsg}`);
+                console.error('Parse Voice Order Error:', err.message, err.stack);
+            }
+        }
+
+        async function analyzeFeedback() {
+            const comment = document.getElementById('feedback-input').value.trim();
+            if (!comment) {
+                setError('Please enter a feedback comment.');
+                return;
+            }
+            try {
+                const response = await fetch(aiFeedbackUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment })
+                });
+                console.log(`Feedback AI API Response Status: ${response.status}, Headers: ${JSON.stringify([...response.headers])}`);
+                if (!response.ok) {
+                    const responseText = await response.text();
+                    console.log(`Feedback AI API Raw Response: ${responseText || 'Empty response'}`);
+                    throw new Error(`Analyze feedback failed: ${response.status} - ${responseText}`);
+                }
+                const data = await response.json();
+                console.log('Feedback AI Response:', JSON.stringify(data, null, 2));
+                document.getElementById('feedback-result').innerText = `Sentiment: ${data.sentiment}\nKeywords: ${data.keywords.join(', ')}`;
+                setError('');
+            } catch (err) {
+                setError(`Error: Feedback analyzer may not be running on ${aiFeedbackUrl}. Details: ${parseErrorResponse(err, err.message.split(' - ')[1])}`);
+                console.error('Analyze Feedback Error:', err.message);
+            }
+        }
+
+        function startVoiceRecording() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onresult = (event) => {
+                voiceTranscript = event.results[0][0].transcript;
+                const confidence = event.results[0][0].confidence;
+                document.getElementById('voice-transcript').innerText = `Transcript: ${voiceTranscript}`;
+                document.getElementById('voice-confidence').innerText = `Confidence: ${(confidence * 100).toFixed(2)}%`;
+                setError(confidence < 0.7 ? 'Low confidence. Try speaking clearly or use manual input.' : '');
+            };
+
+            recognition.onerror = (event) => {
+                setError(`Voice recognition error: ${event.error}. Try manual input.`);
+            };
+
+            recognition.onend = () => {
+                setError('Recording stopped. Click "Parse and Place Order" or "Retry Recording".');
+            };
+
+            recognition.start();
+            setError('Recording voice... Speak your order (e.g., "two zinger burgers and one fries").');
+        }
+
+        function retryVoiceRecording() {
+            voiceTranscript = '';
+            document.getElementById('voice-transcript').innerText = '';
+            document.getElementById('voice-confidence').innerText = '';
+            startVoiceRecording();
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
